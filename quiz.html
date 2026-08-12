@@ -177,6 +177,23 @@ const LESSONS = {
     ]
   }
 
+  ,"3": {
+    title: "3-dars: Fonetika",
+    timePerQuestion: 35,
+    questions: [
+      { q: "Harflarning sifatlari nechi qismga bo'linadi?", options: ["2","3","4"], correct: 0 },
+      { q: "Nafas ushlab turilishidan hosil bo'ladigan sifat qaysi?", options: ["Shidda","Bayniya","Jahr"], correct: 2 },
+      { q: "Shidda va raxovaning orasida qaysi sifat bor?", options: ["Hams","Bayniya","Iste'lo"], correct: 1 },
+      { q: "Quyidagilar qaysi sifatning harflari: فَحَثَّهُ شَخْصٌ سَكَت", options: ["Shidda","Hams","Raxova"], correct: 1 },
+      { q: "Maxrajda ushlab cho'zib tursa bo'ladigan sifat qaysi?", options: ["Shidda","Bayniya","Raxova"], correct: 2 },
+      { q: "Tovush paychalari tebranmaydigan sifat qaysi?", options: ["Jahr","Hams","Raxova"], correct: 1 },
+      { q: "Shidda harfi qaysi?", options: ["ج","م","ل"], correct: 0 },
+      { q: "Hams harfi qaysi?", options: ["ت","م","د"], correct: 0 },
+      { q: "Ham portlovchi ham sirg'aluvchi sifat qaysi?", options: ["Raxova","Shidda","Bayniya"], correct: 2 },
+      { q: "Ziddi bor sifatlar umumiy nechta?", options: ["14 ta","5 ta","10 ta"], correct: 2 }
+    ]
+  }
+
   /* Yangi dars namunasi (kerak bo'lganda vergul qo'yib pastga qo'shing):
 
   ,"2": {
@@ -298,20 +315,25 @@ const LESSONS = {
     state.timer = setInterval(tick, 1000);
 
     function lockAnswer(chosenIdx){
+      // Diqqat: to'g'ri/xato javob bu yerda ATAYLAB ko'rsatilmaydi — faqat
+      // tanlangan variant belgilanadi. Har bir savolning haqiqiy natijasi
+      // (to'g'ri/xato va to'g'ri javob) faqat test TUGAGANDAN keyin, yakuniy
+      // natija ekranidagi "Javoblar tafsiloti"da ko'rinadi. Shu bilan bir
+      // guruh o'quvchisi keyingi savolga o'tayotganda javobni bilib qolmaydi
+      // va bu test boshqa guruhlar uchun ham qayta ishlatilaverishi mumkin.
       if(answered) return;
       answered = true;
       clearInterval(state.timer);
       const correct = q.correct;
       document.querySelectorAll('#opts .opt').forEach((btn,i)=>{
         btn.disabled = true;
-        if(i === correct) btn.classList.add('correct');
-        else if(i === chosenIdx) btn.classList.add('wrong');
+        if(i === chosenIdx) btn.classList.add('selected');
       });
       state.answers.push({ q: q.q, chosen: chosenIdx, correct, isCorrect: chosenIdx === correct });
       setTimeout(()=>{
         if(state.idx + 1 < total){ state.idx++; showQuestion(); }
         else { showResults(); }
-      }, 700);
+      }, 400);
     }
 
     document.querySelectorAll('#opts .opt').forEach(btn=>{
