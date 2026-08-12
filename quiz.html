@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Video dars quiz</title>
+<style>
+  :root{
+    --brand:#4f46e5;
+    --brand-dark:#3730a3;
+    --bg:#f5f6fb;
+    --card:#ffffff;
+    --text:#1f2333;
+    --muted:#6b7280;
+    --ok:#16a34a;
+    --bad:#dc2626;
+    --warn:#f59e0b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:24px 14px;
+  }
+  .wrap{width:100%;max-width:560px;}
+  .card{
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:0 6px 24px rgba(31,35,51,0.08);
+    padding:28px 24px;
+    margin-bottom:16px;
+  }
+  h1{font-size:1.3rem;margin:0 0 4px;}
+  h2{font-size:1.05rem;margin:0 0 14px;color:var(--muted);font-weight:500;}
+  p{line-height:1.5;}
+  label{display:block;font-size:0.9rem;color:var(--muted);margin-bottom:6px;margin-top:14px;}
+  input[type=text]{
+    width:100%;padding:12px 14px;border-radius:10px;border:1px solid #dfe1ea;
+    font-size:1rem;outline:none;transition:border .15s;
+  }
+  input[type=text]:focus{border-color:var(--brand);}
+  .btn{
+    display:inline-block;width:100%;text-align:center;
+    background:var(--brand);color:#fff;border:none;border-radius:12px;
+    padding:14px 18px;font-size:1rem;font-weight:600;cursor:pointer;
+    margin-top:18px;transition:background .15s,transform .1s;
+    text-decoration:none;
+  }
+  .btn:hover{background:var(--brand-dark);}
+  .btn:active{transform:scale(0.98);}
+  .btn.secondary{background:#eef0fb;color:var(--brand-dark);}
+  .btn.secondary:hover{background:#e0e3fa;}
+  .btn.ghost{background:transparent;color:var(--brand);border:1px solid #dfe1ea;}
+  .lesson-list button{
+    display:block;width:100%;text-align:left;background:#f7f8fc;border:1px solid #e7e9f4;
+    border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:1rem;cursor:pointer;
+    color:var(--text);transition:border .15s,background .15s;
+  }
+  .lesson-list button:hover{border-color:var(--brand);background:#eef0fb;}
+
+  /* quiz screen */
+  .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:0.88rem;color:var(--muted);}
+  .progress-track{height:6px;background:#eceefa;border-radius:6px;overflow:hidden;margin-bottom:18px;}
+  .progress-fill{height:100%;background:var(--brand);width:0%;transition:width .25s;}
+  .timer-wrap{display:flex;align-items:center;gap:10px;margin-bottom:18px;}
+  .timer-track{flex:1;height:8px;background:#eceefa;border-radius:6px;overflow:hidden;}
+  .timer-fill{height:100%;background:var(--ok);width:100%;transition:width 1s linear,background .3s;}
+  .timer-num{font-variant-numeric:tabular-nums;font-weight:700;font-size:0.95rem;min-width:34px;text-align:right;}
+  .q-text{font-size:1.15rem;font-weight:600;margin:0 0 18px;line-height:1.4;}
+  .opt{
+    display:block;width:100%;text-align:left;background:#f7f8fc;border:2px solid #e7e9f4;
+    border-radius:12px;padding:14px 16px;margin-bottom:10px;font-size:1rem;cursor:pointer;
+    color:var(--text);transition:all .12s;
+  }
+  .opt:hover{border-color:var(--brand);}
+  .opt.selected{border-color:var(--brand);background:#eef0fb;}
+  .opt.correct{border-color:var(--ok);background:#eafaf0;}
+  .opt.wrong{border-color:var(--bad);background:#fdecec;}
+  .opt[disabled]{cursor:default;}
+
+  /* results */
+  .score-big{font-size:2.6rem;font-weight:800;text-align:center;margin:6px 0 2px;}
+  .score-sub{text-align:center;color:var(--muted);margin-bottom:6px;}
+  .verdict{text-align:center;font-weight:700;margin-bottom:18px;font-size:1.05rem;}
+  .v-good{color:var(--ok);}
+  .v-mid{color:var(--warn);}
+  .v-bad{color:var(--bad);}
+  .review-item{border-bottom:1px solid #eee;padding:10px 0;font-size:0.92rem;}
+  .review-item:last-child{border-bottom:none;}
+  .review-q{font-weight:600;margin-bottom:4px;}
+  .tag{display:inline-block;font-size:0.75rem;font-weight:700;border-radius:6px;padding:2px 8px;margin-left:6px;}
+  .tag-ok{background:#eafaf0;color:var(--ok);}
+  .tag-bad{background:#fdecec;color:var(--bad);}
+  textarea.result-text{
+    width:100%;min-height:150px;border-radius:10px;border:1px solid #dfe1ea;
+    padding:12px;font-family:inherit;font-size:0.85rem;color:var(--muted);resize:vertical;
+  }
+  .row-btns{display:flex;gap:10px;}
+  .row-btns .btn{margin-top:10px;}
+  .footer-note{text-align:center;font-size:0.78rem;color:#a1a5b7;margin-top:8px;}
+  .copied-msg{text-align:center;color:var(--ok);font-weight:600;font-size:0.9rem;margin-top:8px;display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="app"></div>
+  <p class="footer-note">Barcha ma'lumot faqat shu brauzerda ishlaydi, hech qayerga avtomatik yuborilmaydi.</p>
+</div>
+
+<script>
+/* =====================================================================
+   SAVOLLAR BAZASI — HAR BIR DARS SHU YERGA QO'SHILADI
+   =====================================================================
+   Yangi dars qo'shish uchun pastdagi "3" kabi yangi kalit bilan blok
+   qo'shing (nusxa ko'chirib, matnlarni almashtiring). Kodning boshqa
+   qismini o'zgartirish shart emas.
+
+   correct: to'g'ri javobning options ichidagi tartib raqami (0 dan boshlanadi)
+   timePerQuestion: har bir savol uchun soniyalarda vaqt
+===================================================================== */
+const LESSONS = {
+  "1": {
+    title: "1-dars: Namuna quiz",
+    timePerQuestion: 20,
+    questions: [
+      {
+        q: "Bu shablonda savollar qayerga qo'shiladi?",
+        options: [
+          "LESSONS obyekti ichiga",
+          "CSS qismiga",
+          "HTML <head> ichiga",
+          "Faylning nomiga"
+        ],
+        correct: 0
+      },
+      {
+        q: "Har bir savolga qancha vaqt berilganini nima belgilaydi?",
+        options: ["options soni", "timePerQuestion", "correct raqami", "title matni"],
+        correct: 1
+      },
+      {
+        q: "Yangi dars qo'shish uchun nima qilish kerak?",
+        options: [
+          "Butun kodni qayta yozish",
+          "Yangi kalit (masalan \"3\") bilan blok qo'shish",
+          "Faylni o'chirib qayta yaratish",
+          "Brauzerni yangilash"
+        ],
+        correct: 1
+      },
+      {
+        q: "Natijani o'quvchi qanday yuboradi?",
+        options: [
+          "Avtomatik serverga jo'natiladi",
+          "\"Nusxalash\" tugmasi orqali matn sifatida",
+          "Hech qanday yo'l yo'q",
+          "Faqat o'qituvchi ko'radi"
+        ],
+        correct: 1
+      },
+      {
+        q: "Shu fayl ishlashi uchun internet shart emas, chunki...",
+        options: [
+          "U to'liq bitta HTML faylda, tashqi xizmatga bog'liq emas",
+          "U Telegramga ulangan",
+          "U Google serverida ishlaydi",
+          "U faqat Claude ichida ochiladi"
+        ],
+        correct: 0
+      }
+    ]
+  }
+
+  /* Yangi dars namunasi (kerak bo'lganda vergul qo'yib pastga qo'shing):
+
+  ,"2": {
+    title: "2-dars: ...",
+    timePerQuestion: 20,
+    questions: [
+      { q: "Savol matni?", options: ["A","B","C","D"], correct: 2 }
+    ]
+  }
+  */
+};
+</script>
+
+<script>
+(function(){
+  const app = document.getElementById('app');
+  const params = new URLSearchParams(location.search);
+  let lessonKey = params.get('dars');
+  let state = { name:'', group:'', lessonKey:null, idx:0, answers:[], timer:null, timeLeft:0 };
+
+  function esc(s){
+    const d=document.createElement('div'); d.textContent=s; return d.innerHTML;
+  }
+
+  function render(html){ app.innerHTML = html; }
+
+  // ---------- Ekran 1: darsni tanlash / boshlash ----------
+  function showStart(){
+    const keys = Object.keys(LESSONS);
+    let preselected = (lessonKey && LESSONS[lessonKey]) ? lessonKey : null;
+
+    let listHtml = '';
+    if(!preselected){
+      listHtml = '<div class="lesson-list">' + keys.map(k =>
+        `<button data-k="${esc(k)}">${esc(LESSONS[k].title)} — ${LESSONS[k].questions.length} savol</button>`
+      ).join('') + '</div>';
+    }
+
+    render(`
+      <div class="card">
+        <h1>Video dars — savol-javob testi</h1>
+        <h2>${preselected ? esc(LESSONS[preselected].title) : "Darsni tanlang va ma'lumotlaringizni kiriting"}</h2>
+        <label>Ism va familiya *</label>
+        <input type="text" id="in-name" placeholder="Masalan: Aziz Karimov">
+        <label>Guruh nomi (ixtiyoriy)</label>
+        <input type="text" id="in-group" placeholder="Masalan: Avgust-2 guruhi">
+        ${!preselected ? '<label>Darsni tanlang</label>' + listHtml : ''}
+        <button class="btn" id="start-btn" ${preselected ? '' : 'style="display:none"'}>Boshlash</button>
+      </div>
+    `);
+
+    const nameInput = document.getElementById('in-name');
+    const groupInput = document.getElementById('in-group');
+    const savedName = localStorage.getItem('quiz_name');
+    const savedGroup = localStorage.getItem('quiz_group');
+    if(savedName) nameInput.value = savedName;
+    if(savedGroup) groupInput.value = savedGroup;
+
+    function begin(key){
+      const name = nameInput.value.trim();
+      if(!name){ alert('Iltimos, ism-familiyangizni kiriting.'); nameInput.focus(); return; }
+      localStorage.setItem('quiz_name', name);
+      localStorage.setItem('quiz_group', groupInput.value.trim());
+      state = { name, group: groupInput.value.trim(), lessonKey:key, idx:0, answers:[], timer:null, timeLeft:0 };
+      showQuestion();
+    }
+
+    if(preselected){
+      document.getElementById('start-btn').addEventListener('click', ()=>begin(preselected));
+    } else {
+      app.querySelectorAll('.lesson-list button').forEach(b=>{
+        b.addEventListener('click', ()=>begin(b.dataset.k));
+      });
+    }
+  }
+
+  // ---------- Ekran 2: savol ----------
+  function showQuestion(){
+    clearInterval(state.timer);
+    const lesson = LESSONS[state.lessonKey];
+    const q = lesson.questions[state.idx];
+    const total = lesson.questions.length;
+    state.timeLeft = lesson.timePerQuestion;
+
+    render(`
+      <div class="card">
+        <div class="top-row">
+          <span>${esc(lesson.title)}</span>
+          <span>${state.idx+1} / ${total}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${(state.idx/total)*100}%"></div></div>
+        <div class="timer-wrap">
+          <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+          <div class="timer-num" id="timer-num">${state.timeLeft}s</div>
+        </div>
+        <p class="q-text">${esc(q.q)}</p>
+        <div id="opts">
+          ${q.options.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join('')}
+        </div>
+      </div>
+    `);
+
+    const fill = document.getElementById('timer-fill');
+    const num = document.getElementById('timer-num');
+    let answered = false;
+
+    function tick(){
+      const pct = (state.timeLeft / lesson.timePerQuestion) * 100;
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 50 ? 'var(--ok)' : (pct > 20 ? 'var(--warn)' : 'var(--bad)');
+      num.textContent = state.timeLeft + 's';
+      if(state.timeLeft <= 0){
+        clearInterval(state.timer);
+        if(!answered) lockAnswer(null);
+      }
+      state.timeLeft--;
+    }
+    tick();
+    state.timer = setInterval(tick, 1000);
+
+    function lockAnswer(chosenIdx){
+      if(answered) return;
+      answered = true;
+      clearInterval(state.timer);
+      const correct = q.correct;
+      document.querySelectorAll('#opts .opt').forEach((btn,i)=>{
+        btn.disabled = true;
+        if(i === correct) btn.classList.add('correct');
+        else if(i === chosenIdx) btn.classList.add('wrong');
+      });
+      state.answers.push({ q: q.q, chosen: chosenIdx, correct, isCorrect: chosenIdx === correct });
+      setTimeout(()=>{
+        if(state.idx + 1 < total){ state.idx++; showQuestion(); }
+        else { showResults(); }
+      }, 700);
+    }
+
+    document.querySelectorAll('#opts .opt').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(answered) return;
+        btn.classList.add('selected');
+        lockAnswer(parseInt(btn.dataset.i,10));
+      });
+    });
+  }
+
+  // ---------- Ekran 3: natija ----------
+  function showResults(){
+    const lesson = LESSONS[state.lessonKey];
+    const total = state.answers.length;
+    const correctCount = state.answers.filter(a=>a.isCorrect).length;
+    const pct = Math.round((correctCount/total)*100);
+
+    let verdictClass = 'v-bad', verdictText = "Qayta ko'rib chiqing";
+    if(pct >= 85){ verdictClass='v-good'; verdictText="A'lo natija!"; }
+    else if(pct >= 60){ verdictClass='v-mid'; verdictText="Yaxshi, davom eting"; }
+
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('uz-UZ') + ' ' + now.toLocaleTimeString('uz-UZ',{hour:'2-digit',minute:'2-digit'});
+
+    const reviewHtml = state.answers.map((a,i)=>`
+      <div class="review-item">
+        <div class="review-q">${i+1}. ${esc(a.q)} ${a.isCorrect ? "<span class=\"tag tag-ok\">to'g'ri</span>" : '<span class="tag tag-bad">xato</span>'}</div>
+        ${!a.isCorrect ? `<div style="color:var(--muted)">Sizning javobingiz: ${a.chosen===null?'(javob berilmadi)':esc(lesson.questions[i].options[a.chosen])} · To'g'ri javob: ${esc(lesson.questions[i].options[a.correct])}</div>` : ''}
+      </div>
+    `).join('');
+
+    const resultText =
+`${lesson.title}
+Ism: ${state.name}${state.group ? ' | Guruh: ' + state.group : ''}
+Natija: ${correctCount}/${total} (${pct}%)
+Sana: ${dateStr}`;
+
+    render(`
+      <div class="card">
+        <h2 style="margin-bottom:0;">${esc(lesson.title)}</h2>
+        <div class="score-big">${correctCount}/${total}</div>
+        <div class="score-sub">${pct}% to'g'ri javob</div>
+        <div class="verdict ${verdictClass}">${verdictText}</div>
+        <label>Natijangiz (nusxalab, o'qituvchiga yuboring)</label>
+        <textarea class="result-text" id="result-text" readonly>${resultText}</textarea>
+        <div class="row-btns">
+          <button class="btn" id="copy-btn">Natijani nusxalash</button>
+        </div>
+        <a class="btn secondary" id="tg-btn" target="_blank" rel="noopener">Telegram orqali yuborish</a>
+        <div class="copied-msg" id="copied-msg">Nusxalandi ✓</div>
+        <button class="btn ghost" id="toggle-review">Javoblar tafsilotini ko'rsatish</button>
+        <div id="review-block" style="display:none;margin-top:14px;">${reviewHtml}</div>
+      </div>
+    `);
+
+    document.getElementById('copy-btn').addEventListener('click', async ()=>{
+      const ta = document.getElementById('result-text');
+      try{
+        await navigator.clipboard.writeText(ta.value);
+      }catch(e){
+        ta.select(); document.execCommand('copy');
+      }
+      const msg = document.getElementById('copied-msg');
+      msg.style.display='block';
+      setTimeout(()=>msg.style.display='none', 2000);
+    });
+
+    document.getElementById('tg-btn').href =
+      'https://t.me/share/url?url=&text=' + encodeURIComponent(resultText);
+
+    document.getElementById('toggle-review').addEventListener('click', (e)=>{
+      const block = document.getElementById('review-block');
+      const showing = block.style.display !== 'none';
+      block.style.display = showing ? 'none' : 'block';
+      e.target.textContent = showing ? "Javoblar tafsilotini ko'rsatish" : "Javoblarni yashirish";
+    });
+  }
+
+  showStart();
+})();
+</script>
+</body>
+</html>
